@@ -5,7 +5,10 @@ public abstract class BasicThread implements Runnable {
     private final String threadName;
 
     protected final Signal threadDied = new Signal();
+    protected final Signal threadSleep = new Signal();
+
     protected boolean isDead = false;
+    protected boolean isSleeping = false;
 
     private final Timer loopTimer = new Timer();
     private float threadAliveTime = 0;
@@ -20,6 +23,11 @@ public abstract class BasicThread implements Runnable {
     @Override
     public void run() {
         while (!isDead) {
+            if (isSleeping) {
+                breath();
+                continue;
+            }
+
             threadFrame++;
             loopTimer.startTimer();
 
@@ -36,20 +44,48 @@ public abstract class BasicThread implements Runnable {
     protected abstract void loop();
 
     public BasicThread start() {
+        if (isDead) {
+            return this;
+        }
+
+        if (isSleeping) {
+            isSleeping = false;
+            return this;
+        }
+
+        if (mainThread.isAlive()) {
+            return this;
+        }
+
         mainThread.start();
         return this;
+    }
+
+    public void wakeUp() {
+        isSleeping = false;
+    }
+
+    public void waitDeath() {
+        try {
+            mainThread.join();
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void whenSleep(final Runnable runnable) {
+        threadSleep.add(runnable);
     }
 
     public void whenDied(final Runnable runnable) {
         threadDied.add(runnable);
     }
 
-    protected void breath() {
+    protected static void breath() {
         try {
             Thread.sleep(0);
         } catch (final InterruptedException e) {
             e.printStackTrace();
-            kill();
         }
     }
 
@@ -57,8 +93,17 @@ public abstract class BasicThread implements Runnable {
         isDead = true;
     }
 
+    protected void sleep() {
+        isSleeping = true;
+        threadSleep.dispatch();
+    }
+
     public boolean isDead() {
         return isDead;
+    }
+
+    public boolean isSleeping() {
+        return isSleeping;
     }
 
     public String name() {

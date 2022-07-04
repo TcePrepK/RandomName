@@ -3,21 +3,20 @@ package core;
 import toolbox.CustomRunnable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class Signal {
     private final HashMap<List<String>, List<Runnable>> runnableList = new HashMap<>();
-    private final HashMap<List<String>, List<CustomRunnable>> customRunnableList = new HashMap<>();
+    private final HashMap<List<String>, List<CustomRunnable<Void, Object>>> customRunnableList = new HashMap<>();
 
     public Signal() {
         runnableList.put(null, new ArrayList<>());
         customRunnableList.put(null, new ArrayList<>());
     }
 
-    public void add(final Runnable runnable, final String keys) {
-        final List<String> keyCodes = keyCodeConverter(keys.toLowerCase());
+    public void add(final Runnable runnable, final String... keys) {
+        final List<String> keyCodes = keyCodeConverter(keys);
         final List<Runnable> runnables = runnableList.get(keyCodes);
         runnables.add(runnable);
     }
@@ -27,8 +26,8 @@ public class Signal {
         runnables.add(runnable);
     }
 
-    public void add(final CustomRunnable runnable) {
-        final List<CustomRunnable> customRunnables = customRunnableList.get(null);
+    public void add(final CustomRunnable<Void, Object> runnable) {
+        final List<CustomRunnable<Void, Object>> customRunnables = customRunnableList.get(null);
         customRunnables.add(runnable);
     }
 
@@ -41,8 +40,8 @@ public class Signal {
     }
 
     public void dispatch(final Object arg) {
-        for (final List<CustomRunnable> customRunnables : customRunnableList.values()) {
-            for (final CustomRunnable runnable : customRunnables) {
+        for (final List<CustomRunnable<Void, Object>> customRunnables : customRunnableList.values()) {
+            for (final CustomRunnable<Void, Object> runnable : customRunnables) {
                 runnable.run(arg);
             }
         }
@@ -60,8 +59,8 @@ public class Signal {
                     available = false;
                     break;
                 }
-            }
 
+            }
 
             if (!available) {
                 continue;
@@ -74,9 +73,11 @@ public class Signal {
         }
     }
 
-    private List<String> keyCodeConverter(final String keyString) {
-        final String[] keys = keyString.split("(?!^)");
-        final List<String> keyList = Arrays.asList(keys);
+    private List<String> keyCodeConverter(final String... keys) {
+        final List<String> keyList = new ArrayList<>();
+        for (final String key : keys) {
+            keyList.add(key.toUpperCase());
+        }
 
         runnableList.put(keyList, new ArrayList<>());
         return keyList;

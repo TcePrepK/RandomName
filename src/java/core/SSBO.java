@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
 
 public class SSBO {
-    private int id;
+    public int id;
 
     private final int index, usage;
 
@@ -25,5 +25,9 @@ public class SSBO {
 
     public void bind() {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
+    }
+
+    public void cleanUp() {
+        glDeleteBuffers(id);
     }
 }

@@ -4,7 +4,9 @@ import display.DisplayManager;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
@@ -14,8 +16,14 @@ public class Keyboard {
 
     public static final Signal keyPressed = new Signal();
 
-    public static final String LSHIFT = "42";
-    public static final String SPACE = "57";
+    private static final Map<Integer, String> keyMap = new HashMap<>();
+
+    static {
+        keyMap.put(42, "LSHIFT");
+        keyMap.put(57, "SPACE");
+        keyMap.put(87, "F11");
+        keyMap.put(88, "F12");
+    }
 
     public static void init() {
         GLFW.glfwSetKeyCallback(DisplayManager.getWindow(), (window, key, scancode, action, mods) -> {
@@ -24,6 +32,10 @@ public class Keyboard {
             }
 
             String keyName = GLFW.glfwGetKeyName(key, scancode);
+            if (keyName == null) {
+                keyName = keyMap.get(scancode);
+            }
+
             if (keyName == null) {
                 keyName = Integer.toString(scancode);
             }
@@ -34,13 +46,11 @@ public class Keyboard {
                 Keyboard.pressedList.remove(keyName);
             }
 
-//            System.out.println(scancode);
-
             Keyboard.keyPressed.test();
         });
     }
 
     public static boolean isKeyDown(final String key) {
-        return Keyboard.pressedList.contains(key.toLowerCase());
+        return Keyboard.pressedList.contains(key.toUpperCase());
     }
 }

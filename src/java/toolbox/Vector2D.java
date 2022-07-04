@@ -3,6 +3,8 @@ package toolbox;
 import org.joml.Matrix4f;
 import toolbox.Points.Point2D;
 
+import static core.GlobalVariables.rand;
+
 public class Vector2D {
     public float x, y;
 
@@ -121,6 +123,13 @@ public class Vector2D {
 
     public Point2D toPoint2D() {
         return new Point2D(x, y);
+    }
+
+    public static Vector2D randomVector(final float min, final float max) {
+        return new Vector2D(
+                min + rand.nextFloat() * (max - min),
+                min + rand.nextFloat() * (max - min)
+        );
     }
 
     @Override

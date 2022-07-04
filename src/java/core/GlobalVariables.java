@@ -1,6 +1,7 @@
 package core;
 
-import game.World;
+import game.simulation.ChunkManager;
+import game.simulation.World;
 import renderers.MasterRenderer;
 
 import java.util.Random;
@@ -16,6 +17,10 @@ public class GlobalVariables {
 
     // World
     public final static double mapSeed = new Random().nextGaussian() * 65536;
+
+    public final static int mapChunkSize = 128;
+
+    public final static ChunkManager chunkManager = new ChunkManager();
 
     public final static World world = new World();
     // World

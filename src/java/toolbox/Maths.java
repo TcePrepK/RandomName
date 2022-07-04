@@ -4,7 +4,21 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import toolbox.Points.Point2D;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Maths {
+    public static List<Integer> shuffleNumbers(final int start, final int end) {
+        final List<Integer> list = new ArrayList<>();
+        for (int i = start; i <= end; i++) {
+            list.add(i);
+        }
+        Collections.shuffle(list);
+
+        return list;
+    }
+
     public static Vector3D max(final Vector3D a, final Vector3D b) {
         return new Vector3D(
                 Math.max(a.x, b.x),
@@ -100,11 +114,7 @@ public class Maths {
             return num;
         }
 
-        if (num < min) {
-            return min;
-        }
-
-        return Math.min(num, max);
+        return Math.min(Math.max(num, min), max);
 
     }
 

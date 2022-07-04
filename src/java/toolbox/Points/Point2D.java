@@ -44,12 +44,20 @@ public class Point2D {
         return new Point2D(this.x - x, this.y - y);
     }
 
+    public Point2D sub(final int v) {
+        return new Point2D(x - v, y - v);
+    }
+
     public Point2D mult(final int v) {
         return new Point2D(x * v, y * v);
     }
 
     public Point2D div(final int v) {
         return new Point2D(x / v, y / v);
+    }
+
+    public Point2D div(final Point2D v) {
+        return new Point2D(x / v.x, y / v.y);
     }
 
     public Point2D abs() {
