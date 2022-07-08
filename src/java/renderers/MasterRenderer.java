@@ -1,39 +1,14 @@
 package renderers;
 
-import core.Timer;
 import display.DisplayManager;
-import game.DisplayRenderer;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 
 public class MasterRenderer {
-    public final DisplayRenderer displayRenderer = new DisplayRenderer();
-
-    private final Timer mainTimer = new Timer();
-    private float bindTime;
-    private float traceTime;
-    private float otherTime;
-
-    public void render() {
-        // Binding Timer
-        mainTimer.startTimer();
-        // Binding Timer
-
-        displayRenderer.render();
-
-        // Timer For Others
-        otherTime = (float) mainTimer.stopTimer() * 1000;
-        // Timer For Others
-    }
-
-    public void finishRendering() {
-        mainTimer.startTimer();
-
+    public static void finishRendering() {
         glfwSwapBuffers(DisplayManager.getWindow());
         glfwPollEvents();
-
-        traceTime = (float) mainTimer.stopTimer() * 1000;
     }
 
 //    public void bindFrameBuffer() {
@@ -63,18 +38,5 @@ public class MasterRenderer {
 //    }
 
     public void cleanUp() {
-        displayRenderer.cleanUp();
-    }
-
-    public float getBindTime() {
-        return bindTime;
-    }
-
-    public float getTraceTime() {
-        return traceTime;
-    }
-
-    public float getOtherTime() {
-        return otherTime;
     }
 }

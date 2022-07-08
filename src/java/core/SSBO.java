@@ -14,16 +14,33 @@ public class SSBO {
         this.usage = usage;
     }
 
-    public void create(final long[] data) {
+    private void start() {
         id = glGenBuffers();
-
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, data, usage);
+    }
+
+    private void finish() {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
+    public void create(final long[] data) {
+        start();
+        glBufferData(GL_SHADER_STORAGE_BUFFER, data, usage);
+        finish();
+    }
+
+    public void create(final float[] data) {
+        start();
+        glBufferData(GL_SHADER_STORAGE_BUFFER, data, usage);
+        finish();
+    }
+
     public void bind() {
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
+    }
+
+    public void bind(final int index) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
     }
 

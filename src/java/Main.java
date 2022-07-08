@@ -1,66 +1,43 @@
 import core.Keyboard;
 import core.Mouse;
 import core.ScreenShotManager;
-import core.Timer;
 import display.DisplayManager;
+import game.materials.MaterialManager;
 import org.lwjgl.glfw.GLFW;
+import renderers.MasterRenderer;
 import toolbox.Logger;
 import toolbox.Noise;
 
 import static core.GlobalVariables.*;
-import static display.DisplayManager.HEIGHT;
-import static display.DisplayManager.WIDTH;
 
 public class Main {
     public static void main(final String[] args) {
         DisplayManager.createDisplay();
 
         // Init
-        Noise.init(mapSeed);
+        Noise.init(seed);
         Keyboard.init();
         Mouse.init();
         ScreenShotManager.init();
+        MaterialManager.init();
+        simulation.init();
         // Init
-
-        // Thread
-//        threadManager.addThread(new ChunkGenerationThread()).start();
-//        threadManager.addThread(new ChunkUpdateThread());
-        // Thread
-
-        // Timer Setup
-        final Timer mainTimer = new Timer();
-        // Timer Setup
-
-        // Test
-//        chunkManager.getChunkChunkSpace(0, 0, true);
-//        chunkManager.getChunkChunkSpace(1, 0, true);
-        // Test
-
-        // Chunks
-        for (int i = 0; i < WIDTH / mapChunkSize; i++) {
-            for (int j = 0; j < HEIGHT / mapChunkSize; j++) {
-                chunkManager.getChunkChunkSpace(i, j, true);
-            }
-        }
-        // Chunks
 
         // Game Loop
         Logger.out("~ First Frame Starting");
         while (!GLFW.glfwWindowShouldClose(DisplayManager.getWindow())) {
             currentFrame++;
 
-            mainTimer.startTimer();
             Mouse.update();
             threadManager.update();
-            final float updateTime = (float) mainTimer.stopTimer() * 1000;
 
-            chunkManager.update();
+            simulation.update();
+            simulation.render();
 
-            renderer.render();
-            imGuiManager.update(updateTime);
+            imGuiManager.update();
 
             ScreenShotManager.update();
-            renderer.finishRendering();
+            MasterRenderer.finishRendering();
 
             DisplayManager.updateDisplayTimer();
         }

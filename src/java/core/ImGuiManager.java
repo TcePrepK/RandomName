@@ -6,7 +6,7 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import toolbox.Logger;
 
-import static core.GlobalVariables.renderer;
+import static core.GlobalVariables.renderDirtyRects;
 
 public class ImGuiManager {
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
@@ -20,7 +20,7 @@ public class ImGuiManager {
         Logger.out("~ ImGui Initialized Successfully");
     }
 
-    public void update(final float updateTime) {
+    public void update() {
         imGuiGlfw.newFrame();
         ImGui.newFrame();
         ImGui.begin("Cool Window");
@@ -29,14 +29,17 @@ public class ImGuiManager {
         ImGui.text("FPS: " + DisplayManager.getFPS());
         ImGui.text("Average FPS: " + DisplayManager.getAverageFPS());
         ImGui.spacing();
-        ImGui.text("Update time: " + updateTime + "ms");
-        ImGui.text("Binding time: " + renderer.getBindTime() + "ms");
-        ImGui.text("Tracing time: " + renderer.getTraceTime() + "ms");
-        ImGui.text("Other time: " + renderer.getOtherTime() + "ms");
+//        ImGui.text("Update time: " + updateTime + "ms");
         ImGui.text("Total time: " + DisplayManager.getDelta() * 1000 + "ms");
         ImGui.spacing();
         ImGui.spacing();
         // FPS
+
+        // Debugging
+        if (ImGui.checkbox("Render Dirty Rects", renderDirtyRects)) {
+            renderDirtyRects = !renderDirtyRects;
+        }
+        // Debugging
 
         ImGui.end();
         ImGui.render();

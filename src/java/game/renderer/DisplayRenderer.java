@@ -1,14 +1,14 @@
-package game;
+package game.renderer;
 
 import core.GlobalVariables;
 import core.RawModel;
 import core.SSBO;
+import game.Simulation;
+import game.materials.MaterialManager;
 import shaders.BaseShader;
 
 import java.util.List;
 
-import static core.GlobalVariables.chunkManager;
-import static core.GlobalVariables.world;
 import static org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
@@ -23,22 +23,23 @@ public class DisplayRenderer {
 
     private final SSBO chunkImages = new SSBO(0, GL_DYNAMIC_READ);
 
-    public DisplayRenderer() {
+    private final Simulation simulation;
+
+    public DisplayRenderer(final Simulation simulation) {
+        this.simulation = simulation;
+
         quad = GlobalVariables.loader.loadToVAO(new float[]{
                 -1, 1, 1, 1, -1, -1, 1, -1
         }, 2);
 
         displayShader.start();
         displayShader.loadResolution();
-        displayShader.loadChunkSize();
+        displayShader.loadChunkSize(simulation.mapChunkSize);
         DisplayShader.stop();
     }
 
-    public void render() {
-        world.update();
-        chunkManager.updateBuffers();
-
-        final List<Long> idList = chunkManager.getChunkImageIDs();
+    public void render(final Simulation simulation) {
+        final List<Long> idList = simulation.chunkManager.getChunkImageIDs();
         final long[] ids = new long[idList.size()];
         for (int i = 0; i < idList.size(); i++) {
             ids[i] = idList.get(i);
@@ -49,12 +50,14 @@ public class DisplayRenderer {
         chunkImages.create(ids);
         chunkImages.bind();
 
+        MaterialManager.getColorsSSBO().bind(1);
+
         renderQuad();
         BaseShader.stop();
 
         chunkImages.cleanUp();
 
-        chunkManager.draw();
+        simulation.chunkManager.render();
     }
 
     private void renderQuad() {

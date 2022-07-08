@@ -1,9 +1,8 @@
-package game;
+package game.renderer;
 
 import shaders.BaseShader;
 import toolbox.Vector2D;
 
-import static core.GlobalVariables.mapChunkSize;
 import static display.DisplayManager.HEIGHT;
 import static display.DisplayManager.WIDTH;
 
@@ -30,7 +29,7 @@ public class DisplayShader extends BaseShader {
         BaseShader.load2DVector(resolution, new Vector2D(WIDTH, HEIGHT));
     }
 
-    public void loadChunkSize() {
-        BaseShader.loadInt(chunkSize, mapChunkSize);
+    public void loadChunkSize(final int size) {
+        BaseShader.loadInt(chunkSize, size);
     }
 }

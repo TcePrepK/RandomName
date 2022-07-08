@@ -1,4 +1,6 @@
-package game.simulation;
+package game.world;
+
+import game.Simulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static core.GlobalVariables.mapChunkSize;
+import static core.GlobalVariables.renderDirtyRects;
 import static display.DisplayManager.HEIGHT;
 import static display.DisplayManager.WIDTH;
 
@@ -25,11 +27,17 @@ public class ChunkManager {
 
     private final ExecutorService service = Executors.newFixedThreadPool(4);
 
+    private final Simulation simulation;
+
+    public ChunkManager(final Simulation simulation) {
+        this.simulation = simulation;
+    }
+
     public void updateBuffers() {
         chunkImageIDs.clear();
 
-        final int visibleChunkWidth = (int) Math.ceil(WIDTH / (float) mapChunkSize);
-        final int visibleChunkHeight = (int) Math.ceil(HEIGHT / (float) mapChunkSize);
+        final int visibleChunkWidth = (int) Math.ceil(WIDTH / (float) simulation.mapChunkSize);
+        final int visibleChunkHeight = (int) Math.ceil(HEIGHT / (float) simulation.mapChunkSize);
         for (int y = 0; y < visibleChunkHeight; y++) {
             for (int x = 0; x < visibleChunkWidth; x++) {
                 final Chunk chunk = getChunkChunkSpace(x, y, false);
@@ -56,7 +64,7 @@ public class ChunkManager {
             return null;
         }
 
-        chunk = new Chunk(x, y);
+        chunk = new Chunk(simulation, x, y);
 
         chunkList.add(chunk);
         chunkMap.put(idx, chunk);
@@ -68,14 +76,11 @@ public class ChunkManager {
         return (x & 0xFFFF) + ((y & 0xFFFF) << 0xF);
     }
 
-    public void update() {
-//        final Timer test = new Timer();
-//        test.startTimer();
+    public void update(final Simulation simulation) {
         final List<Future<?>> futures = new ArrayList<>();
         for (final Chunk chunk : chunkList) {
             futures.add(service.submit(chunk::update));
         }
-
 
         while (!futures.isEmpty()) {
             if (futures.get(0).isDone()) {
@@ -83,10 +88,14 @@ public class ChunkManager {
             }
         }
 
-//        System.out.println(chunkList.size() + " Chunk, " + test.stopTimer() * 1000f / chunkList.size() + "ms per Chunk");
+        updateBuffers();
     }
 
-    public void draw() {
+    public void render() {
+        if (!renderDirtyRects) {
+            return;
+        }
+
         for (final Chunk chunk : chunkList) {
             chunk.draw();
         }

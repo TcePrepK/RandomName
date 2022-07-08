@@ -1,13 +1,16 @@
-package game.simulation;
+package game.world;
 
+import game.Simulation;
+import game.materials.MaterialEntity;
+import game.materials.MaterialManager;
+import game.materials.update.MaterialUpdater;
+import game.materials.update.UpdateReport;
 import toolbox.CustomRunnable;
 import toolbox.Maths;
 import toolbox.Points.Point2D;
 
 import java.util.List;
 import java.util.Objects;
-
-import static core.GlobalVariables.mapChunkSize;
 
 public class DirtyRect {
     private int x, y;
@@ -18,7 +21,11 @@ public class DirtyRect {
     private final int ow;
     private final int oh;
 
-    public DirtyRect(final int x, final int y, final int w, final int h) {
+    private final Simulation simulation;
+
+    public DirtyRect(final Simulation simulation, final int x, final int y, final int w, final int h) {
+        this.simulation = simulation;
+
         this.x = x;
         this.y = y;
         this.w = w;
@@ -30,7 +37,9 @@ public class DirtyRect {
         oh = h;
     }
 
-    public DirtyRect(final int x, final int y, final int w, final int h, final boolean old) {
+    public DirtyRect(final Simulation simulation, final int x, final int y, final int w, final int h, final boolean old) {
+        this.simulation = simulation;
+
         this.x = Integer.MAX_VALUE;
         this.y = Integer.MAX_VALUE;
         this.w = -Integer.MAX_VALUE;
@@ -55,58 +64,41 @@ public class DirtyRect {
 
     private void updateRandomly(final DirtyRect nextRect) {
         final List<Integer> randX = Maths.shuffleNumbers(left(), right());
-        if (randX.size() > mapChunkSize) {
-            System.out.println("Test");
-        }
-        
         for (final int x : randX) {
             final List<Integer> randY = Maths.shuffleNumbers(top(), bottom());
             for (final int y : randY) {
-                final int mat = World.getGrid(x, y);
-                if (mat == 0 || mat == 2) {
+
+//        for (int x = left(); x <= right(); x++) {
+//            for (int y = bottom(); y >= top(); y--) {
+                final MaterialEntity material = getMaterial(x, y);
+                if (!material.canMove()) {
                     continue;
                 }
 
-                boolean updated = false;
-                if (World.getGrid(x, y + 1) == 0) {
-                    World.setGrid(x, y + 1, mat);
-                    nextRect.extendTo(x, y + 1);
-
-                    updated = true;
-                } else if (World.getGrid(x + 1, y + 1) == 0) {
-                    World.setGrid(x + 1, y + 1, mat);
-                    nextRect.extendTo(x + 1, y + 1);
-
-                    updated = true;
-                } else if (World.getGrid(x - 1, y + 1) == 0) {
-                    World.setGrid(x - 1, y + 1, mat);
-                    nextRect.extendTo(x - 1, y + 1);
-
-                    updated = true;
+                final UpdateReport report = MaterialUpdater.update(x, y, material);
+                if (!report.isUpdated()) {
+                    continue;
                 }
 
-                if (!updated && mat == 3) {
-                    if (World.getGrid(x + 1, y) == 0) {
-                        World.setGrid(x + 1, y, mat);
-                        nextRect.extendTo(x + 1, y);
+                final Point2D updatedPos = report.getUpdatedPos();
 
-                        updated = true;
-                    } else if (World.getGrid(x - 1, y) == 0) {
-                        World.setGrid(x - 1, y, mat);
-                        nextRect.extendTo(x - 1, y);
+                setMaterial(x, y, MaterialManager.spaceEntity);
+                setMaterial(updatedPos.x, updatedPos.y, material);
 
-                        updated = true;
-                    }
-                }
-
-                if (updated) {
-                    World.setGrid(x, y, 0);
-                    nextRect.extendTo(x, y);
-                }
+                nextRect.extendTo(x, y);
+                nextRect.extendTo(updatedPos.x, updatedPos.y);
             }
         }
 
         nextRect.extendAllSides(1).fixBounds();
+    }
+
+    private MaterialEntity getMaterial(final int x, final int y) {
+        return simulation.world.getMaterial(x, y);
+    }
+
+    private void setMaterial(final int x, final int y, final MaterialEntity e) {
+        simulation.world.setMaterial(x, y, e);
     }
 
     public void extendTo(final int x, final int y) {

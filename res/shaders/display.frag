@@ -1,7 +1,7 @@
 #version 450 core
 #extension GL_ARB_bindless_texture : require
 
-out vec3 outColor;
+out vec4 outColor;
 
 uniform vec2 resolution;
 uniform int chunkSize;
@@ -11,6 +11,10 @@ layout(std430, binding = 0) readonly buffer ChunkBuffer {
 } chunkBuffer;
 
 int visibleChunkWidth = int(resolution.x / chunkSize);
+
+layout(std430, binding = 1) readonly buffer MaterialColors {
+    vec4 list[];
+} materialColors;
 
 int getChunkIDX(ivec2 pos) {
     return pos.x + pos.y * visibleChunkWidth;
@@ -27,11 +31,13 @@ void main(void) {
 
     const int material = int(texture(sampler2D(chunkBuffer.textures[getChunkIDX(chunkPos)]), scaledPixel).r * 255);
 
-    if (material == 1) {
-        outColor = vec3(1, 0, 0);
-    } else if (material == 2) {
-        outColor = vec3(0, 1, 0);
-    } else if (material == 3) {
-        outColor = vec3(0, 0, 1);
-    }
+    outColor = materialColors.list[material] / 255.0;
+
+    //    if (material == 1) {
+    //        outColor = vec3(1, 0, 0);
+    //    } else if (material == 2) {
+    //        outColor = vec3(0, 1, 0);
+    //    } else if (material == 3) {
+    //        outColor = vec3(0, 0, 1);
+    //    }
 }
